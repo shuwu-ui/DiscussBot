@@ -130,7 +130,7 @@ home_url = https://linux.do/
 connect_url = https://connect.linux.do/
 
 [wxpusher]
-use_wxpusher = flase
+use_wxpusher = false
 app_token = your_app_token
 topic_id = your_topic_id
 ```
