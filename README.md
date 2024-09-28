@@ -104,8 +104,8 @@
 ## 拉取项目,修改配置
 
 ```bash
-git clone git@github.com:shuwu-ui/L-.git
-cd bot
+git clone https://github.com/shuwu-ui/DiscussBot.git
+cd DiscussBot
 ```
 ## 1.2 配置文件
 
