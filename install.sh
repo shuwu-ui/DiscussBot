@@ -1,57 +1,20 @@
 #!/bin/bash
 
 # setup.sh - 自动化 Docker Compose 项目设置脚本
-# setup.sh - Automated Docker Compose Project Setup Script
 
 set -e  # 当发生错误时，立即退出
 
 # 捕获Ctrl+C中断信号，提示用户
-trap 'echo "Script interrupted. Exiting..."; exit 1;' INT
+trap 'echo "脚本被中断，正在退出..."; exit 1;' INT
 
 # 函数：检查命令是否存在
 command_exists () {
     command -v "$1" >/dev/null 2>&1
 }
 
-# 定义多语言提示
-declare -A MSG_EN
+# 中文提示
 declare -A MSG_ZH
 
-# 英文提示
-MSG_EN["check_dependencies"]="Checking necessary dependencies..."
-MSG_EN["dependency_missing"]="Error: %s is not installed. Please install %s first."
-MSG_EN["all_dependencies_installed"]="All dependencies are installed."
-MSG_EN["cloning_repository"]="Cloning repository: %s..."
-MSG_EN["clone_completed"]="Cloning completed."
-MSG_EN["directory_exists"]="Directory %s already exists. Skipping clone step."
-MSG_EN["docker_compose_missing"]="Error: docker-compose.yml file not found. Please ensure the project contains this file."
-MSG_EN["creating_config_dir"]="Creating configuration directory %s..."
-MSG_EN["config_exists"]="Configuration file %s already exists."
-MSG_EN["overwrite_prompt"]="Do you want to overwrite the existing configuration file? (y/n): "
-MSG_EN["using_existing_config"]="Using the existing configuration file."
-MSG_EN["overwriting_config"]="Overwriting the configuration file..."
-MSG_EN["creating_config"]="Creating configuration file %s..."
-MSG_EN["enter_username"]="Enter username (credentials.username) [default: john_doe123]: "
-MSG_EN["enter_password"]="Enter password (credentials.password) [default: password123]: "
-MSG_EN["enter_like_prob"]="Enter like_probability (settings.like_probability) [default: 0.02]: "
-MSG_EN["enter_reply_prob"]="Enter reply_probability (settings.reply_probability) [default: 0]: "
-MSG_EN["enter_collect_prob"]="Enter collect_probability (settings.collect_probability) [default: 0.02]: "
-MSG_EN["enter_max_retries"]="Enter max_retries (settings.max_retries) [default: 3]: "
-MSG_EN["enter_daily_run_range"]="Enter daily_run_range (settings.daily_run_range) [default: 10-50]: "
-MSG_EN["enter_sleep_time_range"]="Enter sleep_time_range (settings.sleep_time_range) [default: 10-25]: "
-MSG_EN["enter_max_topics"]="Enter max_topics (settings.max_topics) [default: 20000]: "
-MSG_EN["use_wxpusher_prompt"]="Do you want to use wxpusher? (use_wxpusher) [default: false] (y/n): "
-MSG_EN["enter_app_token"]="Enter wxpusher app_token (wxpusher.app_token): "
-MSG_EN["enter_topic_id"]="Enter wxpusher topic_id (wxpusher.topic_id): "
-MSG_EN["config_created"]="Configuration file has been created."
-MSG_EN["display_config"]="Current configuration file content:"
-MSG_EN["start_docker_compose"]="Starting Docker Compose services..."
-MSG_EN["docker_compose_started"]="Docker Compose services have been started."
-MSG_EN["check_service_status"]="You can check the service status with the following command:\n  docker-compose ps"
-MSG_EN["chmod_config"]="Setting permissions for config.ini to be readable only by the user."
-MSG_EN["error_language"]="Invalid selection. Defaulting to English."
-
-# 中文提示
 MSG_ZH["check_dependencies"]="检查必要的依赖项..."
 MSG_ZH["dependency_missing"]="错误: %s 未安装。请先安装 %s。"
 MSG_ZH["all_dependencies_installed"]="所有依赖项均已安装。"
@@ -68,7 +31,7 @@ MSG_ZH["creating_config"]="正在创建配置文件 %s..."
 MSG_ZH["enter_username"]="请输入用户名 (credentials.username) [默认: john_doe123]: "
 MSG_ZH["enter_password"]="请输入密码 (credentials.password) [默认: password123]: "
 MSG_ZH["enter_like_prob"]="请输入 like_probability (settings.like_probability) [默认: 0.02]: "
-MSG_ZH["enter_reply_prob"]="请输入 reply_probability (settings.reply_probability) [默认: 0]: "
+MSG_ZH["enter_reply_prob"]="请输入 reply_probability (settings.reply_probability) [默认: 0.02]: "
 MSG_ZH["enter_collect_prob"]="请输入 collect_probability (settings.collect_probability) [默认: 0.02]: "
 MSG_ZH["enter_max_retries"]="请输入 max_retries (settings.max_retries) [默认: 3]: "
 MSG_ZH["enter_daily_run_range"]="请输入 daily_run_range (settings.daily_run_range) [默认: 10-50]: "
@@ -83,32 +46,11 @@ MSG_ZH["start_docker_compose"]="启动 Docker Compose 服务..."
 MSG_ZH["docker_compose_started"]="Docker Compose 服务已启动。"
 MSG_ZH["check_service_status"]="您可以使用以下命令查看服务状态：\n  docker-compose ps"
 MSG_ZH["chmod_config"]="设置 config.ini 权限为仅用户可读。"
-MSG_ZH["error_language"]="选择无效。默认使用英文。"
-
-# 选择语言
-echo "Select language / 选择语言:"
-echo "1. English"
-echo "2. 中文"
-read -p "Enter choice (1/2): " lang_choice
-
-if [ "$lang_choice" == "2" ]; then
-    lang="ZH"
-else
-    lang="EN"
-    if [ "$lang_choice" != "1" ]; then
-        # 默认使用英文
-        printf "${MSG_ZH["error_language"]}\n"
-    fi
-fi
 
 # 函数：输出消息
 msg() {
     local key=$1
-    if [ "$lang" == "ZH" ];then
-        echo -e "${MSG_ZH[$key]}"
-    else
-        echo -e "${MSG_EN[$key]}"
-    fi
+    echo -e "${MSG_ZH[$key]}"
 }
 
 # 检查依赖项
@@ -116,11 +58,7 @@ msg "check_dependencies"
 
 for cmd in git docker docker-compose; do
     if ! command_exists $cmd ; then
-        if [ "$lang" == "ZH" ];then
-            printf "${MSG_ZH["dependency_missing"]}\n" "$cmd" "$cmd"
-        else
-            printf "${MSG_EN["dependency_missing"]}\n" "$cmd" "$cmd"
-        fi
+        printf "${MSG_ZH["dependency_missing"]}\n" "$cmd" "$cmd"
         exit 1
     fi
 done
@@ -131,10 +69,10 @@ msg "all_dependencies_installed"
 REPO_URL="https://github.com/shuwu-ui/DiscussBot.git"
 PROJECT_DIR="DiscussBot"
 
-if [ -d "$PROJECT_DIR" ];then
-    msg "directory_exists"
+if [ -d "$PROJECT_DIR" ]; then
+    printf "${MSG_ZH["directory_exists"]}\n" "$PROJECT_DIR"
 else
-    msg "cloning_repository"
+    printf "${MSG_ZH["cloning_repository"]}\n" "$REPO_URL"
     git clone $REPO_URL
     msg "clone_completed"
 fi
@@ -142,7 +80,7 @@ fi
 cd $PROJECT_DIR
 
 # 检查 docker-compose.yml 是否存在
-if [ ! -f "docker-compose.yml" ];then
+if [ ! -f "docker-compose.yml" ]; then
     msg "docker_compose_missing"
     exit 1
 fi
@@ -151,14 +89,15 @@ fi
 CONFIG_DIR="config"
 CONFIG_FILE="$CONFIG_DIR/config.ini"
 
-if [ ! -d "$CONFIG_DIR" ];then
-    msg "creating_config_dir"
+if [ ! -d "$CONFIG_DIR" ]; then
+    printf "${MSG_ZH["creating_config_dir"]}\n" "$CONFIG_DIR"
     mkdir $CONFIG_DIR
 fi
 
-if [ -f "$CONFIG_FILE" ];then
-    read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["overwrite_prompt"]}" || echo "${MSG_EN["overwrite_prompt"]}")" choice
-    if [[ "$choice" != "y" && "$choice" != "Y" ]];then
+if [ -f "$CONFIG_FILE" ]; then
+    printf "${MSG_ZH["config_exists"]}\n" "$CONFIG_FILE"
+    read -p "${MSG_ZH["overwrite_prompt"]}" choice
+    if [[ "$choice" != "y" && "$choice" != "Y" ]]; then
         msg "using_existing_config"
     else
         msg "overwriting_config"
@@ -168,45 +107,45 @@ if [ -f "$CONFIG_FILE" ];then
 fi
 
 # 如果配置文件不存在或选择覆盖，则创建新的配置文件
-if [ ! -f "$CONFIG_FILE" ];then
+if [ ! -f "$CONFIG_FILE" ]; then
     msg "creating_config"
 
     # 读取配置项，提供默认值
-    read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_username"]}" || echo "${MSG_EN["enter_username"]}")" username
+    read -p "${MSG_ZH["enter_username"]}" username
     username=${username:-john_doe123}
 
-    read -sp "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_password"]}" || echo "${MSG_EN["enter_password"]}")" password
+    read -sp "${MSG_ZH["enter_password"]}" password
     echo
     password=${password:-password123}
 
-    read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_like_prob"]}" || echo "${MSG_EN["enter_like_prob"]}")" like_probability
+    read -p "${MSG_ZH["enter_like_prob"]}" like_probability
     like_probability=${like_probability:-0.02}
 
-    read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_reply_prob"]}" || echo "${MSG_EN["enter_reply_prob"]}")" reply_probability
-    reply_probability=${reply_probability:-0}
+    read -p "${MSG_ZH["enter_reply_prob"]}" reply_probability
+    reply_probability=${reply_probability:-0.02}
 
-    read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_collect_prob"]}" || echo "${MSG_EN["enter_collect_prob"]}")" collect_probability
+    read -p "${MSG_ZH["enter_collect_prob"]}" collect_probability
     collect_probability=${collect_probability:-0.02}
 
-    read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_max_retries"]}" || echo "${MSG_EN["enter_max_retries"]}")" max_retries
+    read -p "${MSG_ZH["enter_max_retries"]}" max_retries
     max_retries=${max_retries:-3}
 
-    read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_daily_run_range"]}" || echo "${MSG_EN["enter_daily_run_range"]}")" daily_run_range
+    read -p "${MSG_ZH["enter_daily_run_range"]}" daily_run_range
     daily_run_range=${daily_run_range:-10-50}
 
-    read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_sleep_time_range"]}" || echo "${MSG_EN["enter_sleep_time_range"]}")" sleep_time_range
+    read -p "${MSG_ZH["enter_sleep_time_range"]}" sleep_time_range
     sleep_time_range=${sleep_time_range:-10-25}
 
-    read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_max_topics"]}" || echo "${MSG_EN["enter_max_topics"]}")" max_topics
+    read -p "${MSG_ZH["enter_max_topics"]}" max_topics
     max_topics=${max_topics:-20000}
 
     # wxpusher 部分
-    read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["use_wxpusher_prompt"]}" || echo "${MSG_EN["use_wxpusher_prompt"]}")" use_wxpusher_input
+    read -p "${MSG_ZH["use_wxpusher_prompt"]}" use_wxpusher_input
     case "$use_wxpusher_input" in
         y|Y|yes|YES)
             use_wxpusher=true
-            read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_app_token"]}" || echo "${MSG_EN["enter_app_token"]}")" app_token
-            read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_topic_id"]}" || echo "${MSG_EN["enter_topic_id"]}")" topic_id
+            read -p "${MSG_ZH["enter_app_token"]}" app_token
+            read -p "${MSG_ZH["enter_topic_id"]}" topic_id
             ;;
         *)
             use_wxpusher=false
@@ -235,7 +174,7 @@ use_wxpusher = $use_wxpusher
 EOL
 
     # 仅在 use_wxpusher 为 true 时添加 app_token 和 topic_id
-    if [ "$use_wxpusher" = "true" ];then
+    if [ "$use_wxpusher" = "true" ]; then
         cat >> $CONFIG_FILE <<EOL
 app_token = $app_token
 topic_id = $topic_id
