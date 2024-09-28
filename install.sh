@@ -5,6 +5,9 @@
 
 set -e  # 当发生错误时，立即退出
 
+# 捕获Ctrl+C中断信号，提示用户
+trap 'echo "Script interrupted. Exiting..."; exit 1;' INT
+
 # 函数：检查命令是否存在
 command_exists () {
     command -v "$1" >/dev/null 2>&1
@@ -31,7 +34,7 @@ MSG_EN["creating_config"]="Creating configuration file %s..."
 MSG_EN["enter_username"]="Enter username (credentials.username) [default: john_doe123]: "
 MSG_EN["enter_password"]="Enter password (credentials.password) [default: password123]: "
 MSG_EN["enter_like_prob"]="Enter like_probability (settings.like_probability) [default: 0.02]: "
-MSG_EN["enter_reply_prob"]="Enter reply_probability (settings.reply_probability) [default: 0.02]: "
+MSG_EN["enter_reply_prob"]="Enter reply_probability (settings.reply_probability) [default: 0]: "
 MSG_EN["enter_collect_prob"]="Enter collect_probability (settings.collect_probability) [default: 0.02]: "
 MSG_EN["enter_max_retries"]="Enter max_retries (settings.max_retries) [default: 3]: "
 MSG_EN["enter_daily_run_range"]="Enter daily_run_range (settings.daily_run_range) [default: 10-50]: "
@@ -65,7 +68,7 @@ MSG_ZH["creating_config"]="正在创建配置文件 %s..."
 MSG_ZH["enter_username"]="请输入用户名 (credentials.username) [默认: john_doe123]: "
 MSG_ZH["enter_password"]="请输入密码 (credentials.password) [默认: password123]: "
 MSG_ZH["enter_like_prob"]="请输入 like_probability (settings.like_probability) [默认: 0.02]: "
-MSG_ZH["enter_reply_prob"]="请输入 reply_probability (settings.reply_probability) [默认: 0.02]: "
+MSG_ZH["enter_reply_prob"]="请输入 reply_probability (settings.reply_probability) [默认: 0]: "
 MSG_ZH["enter_collect_prob"]="请输入 collect_probability (settings.collect_probability) [默认: 0.02]: "
 MSG_ZH["enter_max_retries"]="请输入 max_retries (settings.max_retries) [默认: 3]: "
 MSG_ZH["enter_daily_run_range"]="请输入 daily_run_range (settings.daily_run_range) [默认: 10-50]: "
@@ -101,7 +104,7 @@ fi
 # 函数：输出消息
 msg() {
     local key=$1
-    if [ "$lang" == "ZH" ]; then
+    if [ "$lang" == "ZH" ];then
         echo -e "${MSG_ZH[$key]}"
     else
         echo -e "${MSG_EN[$key]}"
@@ -113,7 +116,7 @@ msg "check_dependencies"
 
 for cmd in git docker docker-compose; do
     if ! command_exists $cmd ; then
-        if [ "$lang" == "ZH" ]; then
+        if [ "$lang" == "ZH" ];then
             printf "${MSG_ZH["dependency_missing"]}\n" "$cmd" "$cmd"
         else
             printf "${MSG_EN["dependency_missing"]}\n" "$cmd" "$cmd"
@@ -128,18 +131,10 @@ msg "all_dependencies_installed"
 REPO_URL="https://github.com/shuwu-ui/DiscussBot.git"
 PROJECT_DIR="DiscussBot"
 
-if [ -d "$PROJECT_DIR" ]; then
-    if [ "$lang" == "ZH" ]; then
-        printf "${MSG_ZH["directory_exists"]}\n" "$PROJECT_DIR"
-    else
-        printf "${MSG_EN["directory_exists"]}\n" "$PROJECT_DIR"
-    fi
+if [ -d "$PROJECT_DIR" ];then
+    msg "directory_exists"
 else
-    if [ "$lang" == "ZH" ]; then
-        printf "${MSG_ZH["cloning_repository"]}\n" "$REPO_URL"
-    else
-        printf "${MSG_EN["cloning_repository"]}\n" "$REPO_URL"
-    fi
+    msg "cloning_repository"
     git clone $REPO_URL
     msg "clone_completed"
 fi
@@ -147,7 +142,7 @@ fi
 cd $PROJECT_DIR
 
 # 检查 docker-compose.yml 是否存在
-if [ ! -f "docker-compose.yml" ]; then
+if [ ! -f "docker-compose.yml" ];then
     msg "docker_compose_missing"
     exit 1
 fi
@@ -156,23 +151,14 @@ fi
 CONFIG_DIR="config"
 CONFIG_FILE="$CONFIG_DIR/config.ini"
 
-if [ ! -d "$CONFIG_DIR" ]; then
-    if [ "$lang" == "ZH" ]; then
-        printf "${MSG_ZH["creating_config_dir"]}\n" "$CONFIG_DIR"
-    else
-        printf "${MSG_EN["creating_config_dir"]}\n" "$CONFIG_DIR"
-    fi
+if [ ! -d "$CONFIG_DIR" ];then
+    msg "creating_config_dir"
     mkdir $CONFIG_DIR
 fi
 
-if [ -f "$CONFIG_FILE" ]; then
-    if [ "$lang" == "ZH" ]; then
-        printf "${MSG_ZH["config_exists"]}\n" "$CONFIG_FILE"
-    else
-        printf "${MSG_EN["config_exists"]}\n" "$CONFIG_FILE"
-    fi
+if [ -f "$CONFIG_FILE" ];then
     read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["overwrite_prompt"]}" || echo "${MSG_EN["overwrite_prompt"]}")" choice
-    if [[ "$choice" != "y" && "$choice" != "Y" ]]; then
+    if [[ "$choice" != "y" && "$choice" != "Y" ]];then
         msg "using_existing_config"
     else
         msg "overwriting_config"
@@ -181,95 +167,46 @@ if [ -f "$CONFIG_FILE" ]; then
     fi
 fi
 
-if [ ! -f "$CONFIG_FILE" ]; then
+# 如果配置文件不存在或选择覆盖，则创建新的配置文件
+if [ ! -f "$CONFIG_FILE" ];then
     msg "creating_config"
 
     # 读取配置项，提供默认值
-    if [ "$lang" == "ZH" ]; then
-        read -p "${MSG_ZH["enter_username"]}" username
-    else
-        read -p "${MSG_EN["enter_username"]}" username
-    fi
+    read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_username"]}" || echo "${MSG_EN["enter_username"]}")" username
     username=${username:-john_doe123}
 
-    if [ "$lang" == "ZH" ]; then
-        read -sp "${MSG_ZH["enter_password"]}" password
-        echo
-    else
-        read -sp "${MSG_EN["enter_password"]}" password
-        echo
-    fi
+    read -sp "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_password"]}" || echo "${MSG_EN["enter_password"]}")" password
+    echo
     password=${password:-password123}
 
-    if [ "$lang" == "ZH" ]; then
-        read -p "${MSG_ZH["enter_like_prob"]}" like_probability
-    else
-        read -p "${MSG_EN["enter_like_prob"]}" like_probability
-    fi
+    read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_like_prob"]}" || echo "${MSG_EN["enter_like_prob"]}")" like_probability
     like_probability=${like_probability:-0.02}
 
-    if [ "$lang" == "ZH" ]; then
-        read -p "${MSG_ZH["enter_reply_prob"]}" reply_probability
-    else
-        read -p "${MSG_EN["enter_reply_prob"]}" reply_probability
-    fi
-    reply_probability=${reply_probability:-0.02}
+    read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_reply_prob"]}" || echo "${MSG_EN["enter_reply_prob"]}")" reply_probability
+    reply_probability=${reply_probability:-0}
 
-    if [ "$lang" == "ZH" ]; then
-        read -p "${MSG_ZH["enter_collect_prob"]}" collect_probability
-    else
-        read -p "${MSG_EN["enter_collect_prob"]}" collect_probability
-    fi
+    read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_collect_prob"]}" || echo "${MSG_EN["enter_collect_prob"]}")" collect_probability
     collect_probability=${collect_probability:-0.02}
 
-    if [ "$lang" == "ZH" ]; then
-        read -p "${MSG_ZH["enter_max_retries"]}" max_retries
-    else
-        read -p "${MSG_EN["enter_max_retries"]}" max_retries
-    fi
+    read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_max_retries"]}" || echo "${MSG_EN["enter_max_retries"]}")" max_retries
     max_retries=${max_retries:-3}
 
-    if [ "$lang" == "ZH" ]; then
-        read -p "${MSG_ZH["enter_daily_run_range"]}" daily_run_range
-    else
-        read -p "${MSG_EN["enter_daily_run_range"]}" daily_run_range
-    fi
+    read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_daily_run_range"]}" || echo "${MSG_EN["enter_daily_run_range"]}")" daily_run_range
     daily_run_range=${daily_run_range:-10-50}
 
-    if [ "$lang" == "ZH" ]; then
-        read -p "${MSG_ZH["enter_sleep_time_range"]}" sleep_time_range
-    else
-        read -p "${MSG_EN["enter_sleep_time_range"]}" sleep_time_range
-    fi
+    read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_sleep_time_range"]}" || echo "${MSG_EN["enter_sleep_time_range"]}")" sleep_time_range
     sleep_time_range=${sleep_time_range:-10-25}
 
-    if [ "$lang" == "ZH" ]; then
-        read -p "${MSG_ZH["enter_max_topics"]}" max_topics
-    else
-        read -p "${MSG_EN["enter_max_topics"]}" max_topics
-    fi
+    read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_max_topics"]}" || echo "${MSG_EN["enter_max_topics"]}")" max_topics
     max_topics=${max_topics:-20000}
 
-    # URLs 部分使用默认值，不提供修改选项
-    home_url="https://linux.do/"
-    connect_url="https://connect.linux.do/"
-
     # wxpusher 部分
-    if [ "$lang" == "ZH" ]; then
-        read -p "${MSG_ZH["use_wxpusher_prompt"]}" use_wxpusher_input
-    else
-        read -p "${MSG_EN["use_wxpusher_prompt"]}" use_wxpusher_input
-    fi
+    read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["use_wxpusher_prompt"]}" || echo "${MSG_EN["use_wxpusher_prompt"]}")" use_wxpusher_input
     case "$use_wxpusher_input" in
         y|Y|yes|YES)
             use_wxpusher=true
-            if [ "$lang" == "ZH" ]; then
-                read -p "${MSG_ZH["enter_app_token"]}" app_token
-                read -p "${MSG_ZH["enter_topic_id"]}" topic_id
-            else
-                read -p "${MSG_EN["enter_app_token"]}" app_token
-                read -p "${MSG_EN["enter_topic_id"]}" topic_id
-            fi
+            read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_app_token"]}" || echo "${MSG_EN["enter_app_token"]}")" app_token
+            read -p "$( [ "$lang" == "ZH" ] && echo "${MSG_ZH["enter_topic_id"]}" || echo "${MSG_EN["enter_topic_id"]}")" topic_id
             ;;
         *)
             use_wxpusher=false
@@ -293,16 +230,12 @@ daily_run_range = $daily_run_range
 sleep_time_range = $sleep_time_range
 max_topics = $max_topics
 
-[urls]
-home_url = $home_url
-connect_url = $connect_url
-
 [wxpusher]
 use_wxpusher = $use_wxpusher
 EOL
 
     # 仅在 use_wxpusher 为 true 时添加 app_token 和 topic_id
-    if [ "$use_wxpusher" = "true" ]; then
+    if [ "$use_wxpusher" = "true" ];then
         cat >> $CONFIG_FILE <<EOL
 app_token = $app_token
 topic_id = $topic_id
@@ -317,12 +250,8 @@ msg "display_config"
 cat $CONFIG_FILE
 
 # 设置 config.ini 文件权限为仅用户可读
-if [ "$lang" == "ZH" ]; then
-    printf "${MSG_ZH["chmod_config"]}\n"
-else
-    printf "${MSG_EN["chmod_config"]}\n"
-fi
-chmod 600 config/config.ini
+msg "chmod_config"
+chmod 600 $CONFIG_FILE
 
 # 启动 Docker Compose 服务
 msg "start_docker_compose"
