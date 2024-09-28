@@ -23,23 +23,6 @@ MSG_ZH["clone_completed"]="克隆完成。"
 MSG_ZH["directory_exists"]="目录 %s 已存在。跳过克隆步骤。"
 MSG_ZH["docker_compose_missing"]="错误: 未找到 docker-compose.yml 文件。请确保项目中包含该文件。"
 MSG_ZH["creating_config_dir"]="创建配置目录 %s..."
-MSG_ZH["config_exists"]="配置文件 %s 已存在。"
-MSG_ZH["overwrite_prompt"]="是否要覆盖现有的配置文件？ (y/n): "
-MSG_ZH["using_existing_config"]="使用现有的配置文件。"
-MSG_ZH["overwriting_config"]="正在覆盖配置文件..."
-MSG_ZH["creating_config"]="正在创建配置文件 %s..."
-MSG_ZH["enter_username"]="请输入用户名 (credentials.username): "
-MSG_ZH["enter_password"]="请输入密码 (credentials.password): "
-MSG_ZH["enter_like_prob"]="请输入 like_probability (settings.like_probability): "
-MSG_ZH["enter_reply_prob"]="请输入 reply_probability (settings.reply_probability): "
-MSG_ZH["enter_collect_prob"]="请输入 collect_probability (settings.collect_probability): "
-MSG_ZH["enter_max_retries"]="请输入 max_retries (settings.max_retries): "
-MSG_ZH["enter_daily_run_range"]="请输入 daily_run_range (settings.daily_run_range): "
-MSG_ZH["enter_sleep_time_range"]="请输入 sleep_time_range (settings.sleep_time_range): "
-MSG_ZH["enter_max_topics"]="请输入 max_topics (settings.max_topics): "
-MSG_ZH["use_wxpusher_prompt"]="是否使用 wxpusher? (use_wxpusher) (y/n): "
-MSG_ZH["enter_app_token"]="请输入 wxpusher app_token (wxpusher.app_token): "
-MSG_ZH["enter_topic_id"]="请输入 wxpusher topic_id (wxpusher.topic_id): "
 MSG_ZH["config_created"]="配置文件已创建。"
 MSG_ZH["display_config"]="当前配置文件内容："
 MSG_ZH["start_docker_compose"]="启动 Docker Compose 服务..."
@@ -94,68 +77,55 @@ if [ ! -d "$CONFIG_DIR" ]; then
     mkdir $CONFIG_DIR
 fi
 
-if [ -f "$CONFIG_FILE" ]; then
-    printf "${MSG_ZH["config_exists"]}\n" "$CONFIG_FILE"
-    read -p "${MSG_ZH["overwrite_prompt"]}" choice
-    if [[ "$choice" != "y" && "$choice" != "Y" ]]; then
-        msg "using_existing_config"
-    else
-        msg "overwriting_config"
-        rm -f $CONFIG_FILE
-        touch $CONFIG_FILE
-    fi
-fi
+# 创建新的配置文件
+msg "creating_config"
 
-# 如果配置文件不存在或选择覆盖，则创建新的配置文件
-if [ ! -f "$CONFIG_FILE" ]; then
-    msg "creating_config"
+# 读取配置项，用户可以输入，未输入则使用默认值
+read -p "${MSG_ZH["enter_username"]}" username
+username=${username:-john_doe123}
 
-    # 读取配置项，用户可以输入，未输入则使用默认值
-    read -p "${MSG_ZH["enter_username"]}" username
-    username=${username:-john_doe123}
+read -sp "${MSG_ZH["enter_password"]}" password
+echo
+password=${password:-password123}
 
-    read -sp "${MSG_ZH["enter_password"]}" password
-    echo
-    password=${password:-password123}
+read -p "${MSG_ZH["enter_like_prob"]}" like_probability
+like_probability=${like_probability:-0.02}
 
-    read -p "${MSG_ZH["enter_like_prob"]}" like_probability
-    like_probability=${like_probability:-0.02}
+read -p "${MSG_ZH["enter_reply_prob"]}" reply_probability
+reply_probability=${reply_probability:-0.02}
 
-    read -p "${MSG_ZH["enter_reply_prob"]}" reply_probability
-    reply_probability=${reply_probability:-0.02}
+read -p "${MSG_ZH["enter_collect_prob"]}" collect_probability
+collect_probability=${collect_probability:-0.02}
 
-    read -p "${MSG_ZH["enter_collect_prob"]}" collect_probability
-    collect_probability=${collect_probability:-0.02}
+read -p "${MSG_ZH["enter_max_retries"]}" max_retries
+max_retries=${max_retries:-3}
 
-    read -p "${MSG_ZH["enter_max_retries"]}" max_retries
-    max_retries=${max_retries:-3}
+read -p "${MSG_ZH["enter_daily_run_range"]}" daily_run_range
+daily_run_range=${daily_run_range:-10-50}
 
-    read -p "${MSG_ZH["enter_daily_run_range"]}" daily_run_range
-    daily_run_range=${daily_run_range:-10-50}
+read -p "${MSG_ZH["enter_sleep_time_range"]}" sleep_time_range
+sleep_time_range=${sleep_time_range:-10-25}
 
-    read -p "${MSG_ZH["enter_sleep_time_range"]}" sleep_time_range
-    sleep_time_range=${sleep_time_range:-10-25}
+read -p "${MSG_ZH["enter_max_topics"]}" max_topics
+max_topics=${max_topics:-20000}
 
-    read -p "${MSG_ZH["enter_max_topics"]}" max_topics
-    max_topics=${max_topics:-20000}
+# wxpusher 部分
+read -p "${MSG_ZH["use_wxpusher_prompt"]}" use_wxpusher_input
+case "$use_wxpusher_input" in
+    y|Y|yes|YES)
+        use_wxpusher=true
+        read -p "${MSG_ZH["enter_app_token"]}" app_token
+        read -p "${MSG_ZH["enter_topic_id"]}" topic_id
+        ;;
+    *)
+        use_wxpusher=false
+        app_token=""
+        topic_id=""
+        ;;
+esac
 
-    # wxpusher 部分
-    read -p "${MSG_ZH["use_wxpusher_prompt"]}" use_wxpusher_input
-    case "$use_wxpusher_input" in
-        y|Y|yes|YES)
-            use_wxpusher=true
-            read -p "${MSG_ZH["enter_app_token"]}" app_token
-            read -p "${MSG_ZH["enter_topic_id"]}" topic_id
-            ;;
-        *)
-            use_wxpusher=false
-            app_token=""
-            topic_id=""
-            ;;
-    esac
-
-    # 生成 config.ini 文件
-    cat > $CONFIG_FILE <<EOL
+# 生成 config.ini 文件
+cat > $CONFIG_FILE <<EOL
 [credentials]
 username = $username
 password = $password
@@ -173,16 +143,15 @@ max_topics = $max_topics
 use_wxpusher = $use_wxpusher
 EOL
 
-    # 仅在 use_wxpusher 为 true 时添加 app_token 和 topic_id
-    if [ "$use_wxpusher" = "true" ]; then
-        cat >> $CONFIG_FILE <<EOL
+# 仅在 use_wxpusher 为 true 时添加 app_token 和 topic_id
+if [ "$use_wxpusher" = "true" ]; then
+    cat >> $CONFIG_FILE <<EOL
 app_token = $app_token
 topic_id = $topic_id
 EOL
-    fi
-
-    msg "config_created"
 fi
+
+msg "config_created"
 
 # 显示配置文件内容
 msg "display_config"
