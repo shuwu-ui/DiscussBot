@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  linuxdo:
+    image: shiwu077/cehuo:linuxdo  # 使用推送的镜像
+    container_name: Linuxdo
+    volumes:
+      - ./logs:/app/logs  # 日志目录映射
+      - ./config/config.ini:/app/config/config.ini  # 配置目录映射
+    restart: always  # 容器崩溃时自动重启
+
+  web_panel:
+    image: shiwu077/cehuo:web_panel  # 使用推送的 web_panel 镜像
+    container_name: web_panel_container
+    volumes:
+      - ./logs:/app/logs  # 同样映射日志目录，这样 Flask 容器可以访问日志文件
+    ports:
+      - "5000:5000"  # 映射主机的 5000 端口到容器
+    restart: always  # 容器崩溃后自动重启
