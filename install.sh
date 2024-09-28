@@ -28,16 +28,16 @@ MSG_ZH["overwrite_prompt"]="是否要覆盖现有的配置文件？ (y/n): "
 MSG_ZH["using_existing_config"]="使用现有的配置文件。"
 MSG_ZH["overwriting_config"]="正在覆盖配置文件..."
 MSG_ZH["creating_config"]="正在创建配置文件 %s..."
-MSG_ZH["enter_username"]="请输入用户名 (credentials.username) [默认: john_doe123]: "
-MSG_ZH["enter_password"]="请输入密码 (credentials.password) [默认: password123]: "
-MSG_ZH["enter_like_prob"]="请输入 like_probability (settings.like_probability) [默认: 0.02]: "
-MSG_ZH["enter_reply_prob"]="请输入 reply_probability (settings.reply_probability) [默认: 0.02]: "
-MSG_ZH["enter_collect_prob"]="请输入 collect_probability (settings.collect_probability) [默认: 0.02]: "
-MSG_ZH["enter_max_retries"]="请输入 max_retries (settings.max_retries) [默认: 3]: "
-MSG_ZH["enter_daily_run_range"]="请输入 daily_run_range (settings.daily_run_range) [默认: 10-50]: "
-MSG_ZH["enter_sleep_time_range"]="请输入 sleep_time_range (settings.sleep_time_range) [默认: 10-25]: "
-MSG_ZH["enter_max_topics"]="请输入 max_topics (settings.max_topics) [默认: 20000]: "
-MSG_ZH["use_wxpusher_prompt"]="是否使用 wxpusher? (use_wxpusher) [默认: false] (y/n): "
+MSG_ZH["enter_username"]="请输入用户名 (credentials.username): "
+MSG_ZH["enter_password"]="请输入密码 (credentials.password): "
+MSG_ZH["enter_like_prob"]="请输入 like_probability (settings.like_probability): "
+MSG_ZH["enter_reply_prob"]="请输入 reply_probability (settings.reply_probability): "
+MSG_ZH["enter_collect_prob"]="请输入 collect_probability (settings.collect_probability): "
+MSG_ZH["enter_max_retries"]="请输入 max_retries (settings.max_retries): "
+MSG_ZH["enter_daily_run_range"]="请输入 daily_run_range (settings.daily_run_range): "
+MSG_ZH["enter_sleep_time_range"]="请输入 sleep_time_range (settings.sleep_time_range): "
+MSG_ZH["enter_max_topics"]="请输入 max_topics (settings.max_topics): "
+MSG_ZH["use_wxpusher_prompt"]="是否使用 wxpusher? (use_wxpusher) (y/n): "
 MSG_ZH["enter_app_token"]="请输入 wxpusher app_token (wxpusher.app_token): "
 MSG_ZH["enter_topic_id"]="请输入 wxpusher topic_id (wxpusher.topic_id): "
 MSG_ZH["config_created"]="配置文件已创建。"
@@ -110,7 +110,7 @@ fi
 if [ ! -f "$CONFIG_FILE" ]; then
     msg "creating_config"
 
-    # 读取配置项，提供默认值
+    # 读取配置项，用户可以输入，未输入则使用默认值
     read -p "${MSG_ZH["enter_username"]}" username
     username=${username:-john_doe123}
 
