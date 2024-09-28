@@ -118,7 +118,7 @@ password = password123
 
 [settings]
 like_probability = 0.02
-reply_probability = 0.02
+reply_probability = 0
 collect_probability = 0.02
 max_retries = 3
 daily_run_range = 10-50
