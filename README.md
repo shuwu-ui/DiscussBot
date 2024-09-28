@@ -104,7 +104,7 @@
 ## 拉取项目,修改配置
 
 ```bash
-git clone https://github.com/yourrepo/bot.git  # 替换为实际的Git地址
+git clone git@github.com:shuwu-ui/L-.git
 cd bot
 ```
 ## 1.2 配置文件
