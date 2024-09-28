@@ -72,6 +72,11 @@ fi
 CONFIG_DIR="config"
 CONFIG_FILE="$CONFIG_DIR/config.ini"
 
+# 强制删除旧的 config.ini 文件，确保每次运行都要求用户输入新的配置
+if [ -f "$CONFIG_FILE" ]; then
+    rm -f $CONFIG_FILE
+fi
+
 if [ ! -d "$CONFIG_DIR" ]; then
     printf "${MSG_ZH["creating_config_dir"]}\n" "$CONFIG_DIR"
     mkdir $CONFIG_DIR
@@ -81,41 +86,41 @@ fi
 msg "creating_config"
 
 # 读取配置项，用户可以输入，未输入则使用默认值
-read -p "${MSG_ZH["enter_username"]}" username
+read -p "请输入用户名 (credentials.username) [默认: john_doe123]: " username
 username=${username:-john_doe123}
 
-read -sp "${MSG_ZH["enter_password"]}" password
+read -sp "请输入密码 (credentials.password) [默认: password123]: " password
 echo
 password=${password:-password123}
 
-read -p "${MSG_ZH["enter_like_prob"]}" like_probability
+read -p "请输入 like_probability (settings.like_probability) [默认: 0.02]: " like_probability
 like_probability=${like_probability:-0.02}
 
-read -p "${MSG_ZH["enter_reply_prob"]}" reply_probability
+read -p "请输入 reply_probability (settings.reply_probability) [默认: 0.02]: " reply_probability
 reply_probability=${reply_probability:-0.02}
 
-read -p "${MSG_ZH["enter_collect_prob"]}" collect_probability
+read -p "请输入 collect_probability (settings.collect_probability) [默认: 0.02]: " collect_probability
 collect_probability=${collect_probability:-0.02}
 
-read -p "${MSG_ZH["enter_max_retries"]}" max_retries
+read -p "请输入 max_retries (settings.max_retries) [默认: 3]: " max_retries
 max_retries=${max_retries:-3}
 
-read -p "${MSG_ZH["enter_daily_run_range"]}" daily_run_range
+read -p "请输入 daily_run_range (settings.daily_run_range) [默认: 10-50]: " daily_run_range
 daily_run_range=${daily_run_range:-10-50}
 
-read -p "${MSG_ZH["enter_sleep_time_range"]}" sleep_time_range
+read -p "请输入 sleep_time_range (settings.sleep_time_range) [默认: 10-25]: " sleep_time_range
 sleep_time_range=${sleep_time_range:-10-25}
 
-read -p "${MSG_ZH["enter_max_topics"]}" max_topics
+read -p "请输入 max_topics (settings.max_topics) [默认: 20000]: " max_topics
 max_topics=${max_topics:-20000}
 
 # wxpusher 部分
-read -p "${MSG_ZH["use_wxpusher_prompt"]}" use_wxpusher_input
+read -p "是否使用 wxpusher (use_wxpusher) [默认: false] (y/n): " use_wxpusher_input
 case "$use_wxpusher_input" in
     y|Y|yes|YES)
         use_wxpusher=true
-        read -p "${MSG_ZH["enter_app_token"]}" app_token
-        read -p "${MSG_ZH["enter_topic_id"]}" topic_id
+        read -p "请输入 wxpusher app_token (wxpusher.app_token): " app_token
+        read -p "请输入 wxpusher topic_id (wxpusher.topic_id): " topic_id
         ;;
     *)
         use_wxpusher=false
